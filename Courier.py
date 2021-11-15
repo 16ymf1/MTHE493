@@ -1,3 +1,4 @@
+from math import dist
 import random
 
 class Courier:
@@ -26,3 +27,12 @@ class Courier:
     
     def update_location(self, new_location):
         self.location = new_location
+    
+    def add_distance(self, distance):
+        self.queue_distance += distance
+    
+    def perform_deliveries(self):
+        if self.queue_distance > self.speed:
+            self.queue_distance -= self.speed
+        else:
+            self.queue_distance = 0

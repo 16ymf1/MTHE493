@@ -82,10 +82,14 @@ class Order_Simulator():
             courier_num = random.randint(0, self.num_couriers - 1)
             courier = self.couriers[courier_num]
             dist = courier.compute_order_distance(restaurant, house)
+            courier.add_distance(dist)
             print(f'Order: {i}, Restaurant: {restaurant}, House: {house}')
             print(f'Courier: {courier_num}, Order distance: {dist}')
             courier.update_location(house)
             self.visualize_layout()
+        
+        for i, courier in self.couriers.items():
+            print(f'An order distance of {courier.queue_distance} was added to courier {i}')
             
 if __name__ == "__main__":
     sim = Order_Simulator(4, 2, 2, 10)
