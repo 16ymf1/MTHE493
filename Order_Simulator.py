@@ -55,7 +55,7 @@ class Order_Simulator():
         orders = []
         number_of_new_orders = np.random.poisson(self.rate)
         for new_order_number in range(number_of_new_orders):
-          ()  [orders*.append([r[andom.ch[oicee(self.restaurants.values()]),random.choice(self.houses.values())])
+          orders.append([random.choice([*self.restaurants.values()]),random.choice([*self.houses.values()])])
 
         return orders
       
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     sim = Order_Simulator(4, 2, 2)
     sim.visualize_layout()
     for i in range(10):
-        print(sim.generate_orders_for_timestep())
+        print(len(sim.generate_orders_for_timestep()))
     
