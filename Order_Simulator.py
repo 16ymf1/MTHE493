@@ -91,7 +91,7 @@ class Order_Simulator():
         
         for i, courier in self.couriers.items():
             print(f'An order distance of {courier.new_distance} was added to courier {i}')
-            print(f'The average order distance is {round(courier.new_distance, 2) / len(orders)}')
+            print(f'The average order distance is {round(courier.new_distance / len(orders),2)}')
             courier.perform_deliveries()
     
     def track_variables(self):
