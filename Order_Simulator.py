@@ -43,7 +43,8 @@ class Order_Simulator():
         '''
         self.couriers = {}
         for i in range(self.num_couriers):
-            self.couriers[i] = Courier(self, 50)
+            self.couriers[i] = Courier(self, 15)
+            print(f'Courier {i} initial L_t = 0')
 
     def generate_orders_for_timestep(self):
         '''
@@ -89,12 +90,29 @@ class Order_Simulator():
             self.visualize_layout()
         
         for i, courier in self.couriers.items():
-            print(f'An order distance of {courier.queue_distance} was added to courier {i}')
+            print(f'An order distance of {courier.new_distance} was added to courier {i}')
+            print(f'The average order distance is {round(courier.new_distance, 2) / len(orders)}')
+            courier.perform_deliveries()
+    
+    def track_variables(self):
+        orders = self.generate_orders_for_timestep()
+        print(f'There were {len(orders)} orders placed this timestep:')
+        for i, order in enumerate(orders):
+            restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
+            courier_num = random.randint(0, self.num_couriers - 1)
+            courier = self.couriers[courier_num]
+            dist = courier.compute_order_distance(restaurant, house)
+            courier.add_distance(dist)
+            courier.update_location(house)
+        
+        for i, courier in self.couriers.items():
+            print(f'Courier {i}: L_t = {courier.queue_distance}, A_t = {courier.new_distance}, S_t = {courier.speed}')
+            courier.perform_deliveries()
+
             
 if __name__ == "__main__":
     sim = Order_Simulator(4, 2, 2, 10)
     print('Starting layout:')
     sim.visualize_layout()
-    for i in range(1):
-        sim.simulate_simple_timestep()
+    sim.simulate_simple_timestep()
     

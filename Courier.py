@@ -6,8 +6,9 @@ class Courier:
         self.simulation_instance = simulation_instance
         self.location = self.initialize_position()
         self.order_queue = []
-        self.queue_distance = 0
-        self.speed = courier_speed
+        self.queue_distance = 0     # L_t
+        self.new_distance = 0       # A_t
+        self.speed = courier_speed  # S_t
     
     def initialize_position(self):
         '''
@@ -30,9 +31,12 @@ class Courier:
     
     def add_distance(self, distance):
         self.queue_distance += distance
+        self.new_distance += distance
     
     def perform_deliveries(self):
         if self.queue_distance > self.speed:
             self.queue_distance -= self.speed
         else:
             self.queue_distance = 0
+        
+        self.new_distance = 0
