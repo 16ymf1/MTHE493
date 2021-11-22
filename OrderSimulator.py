@@ -74,7 +74,8 @@ class Order_Simulator():
     
     def simulate_simple_timestep(self):
         '''
-        Simulates timestep, randomly assigning orders to each courier
+        Simulates timestep, randomly assigning orders to each courier. This
+        method prints a visualization of each timestep
         '''
         orders = self.generate_orders_for_timestep()
         print(f'There were {len(orders)} orders placed this timestep:')
@@ -82,8 +83,7 @@ class Order_Simulator():
             restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
             courier_num = random.randint(0, self.num_couriers - 1)
             courier = self.couriers[courier_num]
-            dist = courier.compute_order_distance(restaurant, house)
-            courier.add_distance(dist)
+            courier.add_order(restaurant, house)
             print(f'Order: {i}, Restaurant: {restaurant}, House: {house}')
             print(f'Courier: {courier_num}, Order distance: {dist}')
             courier.update_location(house)
@@ -94,20 +94,24 @@ class Order_Simulator():
             print(f'The average order distance is {round(courier.new_distance / len(orders),2)}')
             courier.perform_deliveries()
     
-    def track_variables(self):
+    def simple_simulation(self):
+        '''
+        Simulation where orders are assigned randomly to either courier
+        '''
         orders = self.generate_orders_for_timestep()
         print(f'There were {len(orders)} orders placed this timestep:')
         for i, order in enumerate(orders):
             restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
             courier_num = random.randint(0, self.num_couriers - 1)
             courier = self.couriers[courier_num]
-            dist = courier.compute_order_distance(restaurant, house)
-            courier.add_distance(dist)
-            courier.update_location(house)
+            courier.add_order(restaurant, house)
         
         for i, courier in self.couriers.items():
             print(f'Courier {i}: L_t = {courier.queue_distance}, A_t = {courier.new_distance}, S_t = {courier.speed}')
-            courier.perform_deliveries()
+            courier.perform_deliveries(visualize=True)
+    
+    def nearest_simulation(self):
+        pass
 
             
 if __name__ == "__main__":
