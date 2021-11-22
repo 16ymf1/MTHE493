@@ -48,21 +48,41 @@ class Courier:
         self.location = new_location
     
     def add_order(self, restaurant, house):
-        self.order_queue.append((restaurant, house))
+        '''
+        Adds order to couriers queue
+        '''
         dist = self.order_dist_from_last_queue(restaurant, house)
+        self.order_queue.append((restaurant, house))
         self.queue_distance += dist
         self.new_distance += dist
         if not self.curr_order:
             self.curr_order = (restaurant, house)
     
-    def perform_deliveries(self, visualize=False):
+    def perform_deliveries(self, visualize=False, timestep=None):
         '''
         Performs the deliveries for a timestep. Will partially
         complete orders that do not have enough time to be fully
         completed
         '''
+
         ## Distance covered by courier in one timestep
         timestep_dist = self.speed * 1
+
+        ## If there is no current order, nothing to do
+        if not self.curr_order:
+            if visualize:
+                print('No orders in queue')
+            return
+        
+        if self.curr_order == self.order_queue[0]:
+            self.order_queue.popleft()
+        
+        if visualize:
+            print('Start:')
+        add = 1 if self.curr_order else 0
+        t = timestep if timestep is not None else 't'
+        print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')
+
         
         ## Updating distance tracking variables
         if self.queue_distance > timestep_dist:
@@ -71,23 +91,21 @@ class Courier:
             self.queue_distance = 0
         self.new_distance = 0
 
-        ## If there is no current order, nothing to do
-        if not self.curr_order:
-            return
-
         ## Deliver orders while there is still distance left in the timestep, and
         ## a currently active order
         while timestep_dist > 0 and self.curr_order:
             dist_left_in_order = self.order_dist_from_current_loc(*self.curr_order)
             ## If order fully completable then update locations and pop order
             ## from queue if it exists
+            starting_pos = self.location
             if dist_left_in_order <= timestep_dist:
                 self.location = self.curr_order[1]
                 timestep_dist -= dist_left_in_order
                 if visualize:
-                    print(f'Completed order - Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
+                    print(f'Completed order - Started: {starting_pos} to Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
                     print(f'Distance covered: {dist_left_in_order}')
                     self.simulation_instance.visualize_layout()
+                    print('---------------------------------------------------------------------')
                     
                 self.curr_order = None
                 if len(self.order_queue) > 0:
@@ -104,12 +122,13 @@ class Courier:
                     x_dist = restaurant_x - curr_x
                     ## First move along x-axis
                     if abs(x_dist) > timestep_dist:
-                        timestep_dist = 0
                         self.location = (curr_x + timestep_dist * np.sign(x_dist), curr_y)
+                        timestep_dist = 0
                     else:
                         timestep_dist -= abs(x_dist)
                         self.location = (curr_x + x_dist, curr_y)
                     ## Second move along y-axis
+                    curr_x, curr_y = self.location
                     y_dist = restaurant_y - curr_y
                     self.location = (curr_x, curr_y + timestep_dist * np.sign(y_dist))
 
@@ -123,35 +142,29 @@ class Courier:
                     x_dist = house_x - curr_x
                     ## First move along x-axis
                     if abs(x_dist) > timestep_dist:
-                        timestep_dist = 0
                         self.location = (
                             curr_x + timestep_dist * np.sign(x_dist), curr_y)
+                        timestep_dist = 0
                     else:
                         timestep_dist -= abs(x_dist)
                         self.location = (curr_x + x_dist, curr_y)
                     ## Second move along y-axis
+                    curr_x, curr_y = self.location
                     y_dist = house_y - curr_y
                     self.location = (curr_x, curr_y +
                                      timestep_dist * np.sign(y_dist))
                 
-                print(
-                    f'Partially completed order - Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
-                print(f'Made it to: {self.location}, distance covered: {dist_covered}')
-                self.simulation_instance.visualize_layout()
+                if visualize:
+                    print(
+                        f'Partially completed order - Starting: {starting_pos} to Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
+                    print(f'Made it to: {self.location}, distance covered: {dist_covered}')
+                    self.simulation_instance.visualize_layout()
+                    print('-------------------------------------------------------------')
                 
                 timestep_dist = 0
-                    
-                    
-
-
-
-
-
-
-
-        if self.queue_distance > self.speed:
-            self.queue_distance -= self.speed
-        else:
-            self.queue_distance = 0
         
-        self.new_distance = 0
+        add = 1 if self.curr_order else 0
+        
+        if visualize:
+            print('End:')
+            print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')

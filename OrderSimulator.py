@@ -72,29 +72,7 @@ class Order_Simulator():
             
         for row in arr: print(row)
     
-    def simulate_simple_timestep(self):
-        '''
-        Simulates timestep, randomly assigning orders to each courier. This
-        method prints a visualization of each timestep
-        '''
-        orders = self.generate_orders_for_timestep()
-        print(f'There were {len(orders)} orders placed this timestep:')
-        for i, order in enumerate(orders):
-            restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
-            courier_num = random.randint(0, self.num_couriers - 1)
-            courier = self.couriers[courier_num]
-            courier.add_order(restaurant, house)
-            print(f'Order: {i}, Restaurant: {restaurant}, House: {house}')
-            print(f'Courier: {courier_num}, Order distance: {dist}')
-            courier.update_location(house)
-            self.visualize_layout()
-        
-        for i, courier in self.couriers.items():
-            print(f'An order distance of {courier.new_distance} was added to courier {i}')
-            print(f'The average order distance is {round(courier.new_distance / len(orders),2)}')
-            courier.perform_deliveries()
-    
-    def simple_simulation(self):
+    def simple_simulation(self, visualize=False, timestep=None):
         '''
         Simulation where orders are assigned randomly to either courier
         '''
@@ -103,20 +81,32 @@ class Order_Simulator():
         for i, order in enumerate(orders):
             restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
             courier_num = random.randint(0, self.num_couriers - 1)
+            if visualize:
+                print(f'Order {restaurant} -> {house} assigned to courier {courier_num}')
             courier = self.couriers[courier_num]
             courier.add_order(restaurant, house)
         
         for i, courier in self.couriers.items():
-            print(f'Courier {i}: L_t = {courier.queue_distance}, A_t = {courier.new_distance}, S_t = {courier.speed}')
-            courier.perform_deliveries(visualize=True)
+            print(f'Courier {i}:')
+            courier.perform_deliveries(visualize=visualize, timestep=timestep)
     
-    def nearest_simulation(self):
-        pass
+    def nearest_simulation(self, visualize=False, timestep=None):
+        '''
+        Simulation where orders are assigned randomly to either courier
+        '''
+        orders = self.generate_orders_for_timestep()
+        print(f'There were {len(orders)} orders placed this timestep:')
+        for i, order in enumerate(orders):
+            restaurant, house = self.restaurants[order[0]], self.houses[order[1]]
+            courier_num = min(self.couriers.items(), key=lambda x:x[1].distance_from_last_queue(restaurant, restaurant))[0]
+            if visualize:
+                print(f'Order {restaurant} -> {house} assigned to courier {courier_num}')
+            courier = self.couriers[courier_num]
+            courier.add_order(restaurant, house)
+        
+        for i, courier in self.couriers.items():
+            print(f'Courier {i}:')
+            courier.perform_deliveries(visualize=visualize, timestep=timestep)
 
-            
-if __name__ == "__main__":
-    sim = Order_Simulator(4, 2, 2, 10)
-    print('Starting layout:')
-    sim.visualize_layout()
-    sim.simulate_simple_timestep()
+
     
