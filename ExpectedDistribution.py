@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-SizeOfMap_X=4 
-SizeOfMap_Y=4                      
-=======
 SizeOfMap_X=4
 SizeOfMap_Y=4
->>>>>>> 860edbc016fad506f7d2bf513d5983c599078994
 Probability_X=1/(SizeOfMap_X-1)         #Assume uniform
 Probability_Y=1/(SizeOfMap_Y-1)         #Assume uniform
 AvgTotalDistanceForOrder=0

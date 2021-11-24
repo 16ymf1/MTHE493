@@ -36,6 +36,8 @@ class Courier:
         '''
         if len(self.order_queue) > 0:
             curr_x, curr_y = self.order_queue[-1][-1]
+        elif self.curr_order:
+            curr_x, curr_y = self.curr_order[-1]
         else:
             curr_x, curr_y = self.location
         r_x, r_y = restaurant
@@ -56,7 +58,7 @@ class Courier:
         self.queue_distance += dist
         self.new_distance += dist
         if not self.curr_order:
-            self.curr_order = (restaurant, house)
+            self.curr_order = self.order_queue.popleft()
     
     def perform_deliveries(self, visualize=False, timestep=None):
         '''
@@ -74,14 +76,12 @@ class Courier:
                 print('No orders in queue')
             return
         
-        if self.curr_order == self.order_queue[0]:
-            self.order_queue.popleft()
-        
         if visualize:
             print('Start:')
         add = 1 if self.curr_order else 0
         t = timestep if timestep is not None else 't'
-        print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')
+        if visualize is not None:
+            print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')
 
         
         ## Updating distance tracking variables
@@ -95,7 +95,7 @@ class Courier:
         ## a currently active order
         while timestep_dist > 0 and self.curr_order:
             dist_left_in_order = self.order_dist_from_current_loc(*self.curr_order)
-            ## If order fully completable then update locations and pop order
+            ## If order fully completable then update locations and pop next order
             ## from queue if it exists
             starting_pos = self.location
             if dist_left_in_order <= timestep_dist:
@@ -136,6 +136,8 @@ class Courier:
                 else:
                     timestep_dist -= dist_to_restaurant
                     self.location = self.curr_order[0]
+                    old_curr = self.curr_order
+                    self.curr_order = (self.curr_order[1], self.curr_order[1])
 
                     house_x, house_y = self.curr_order[1]
                     curr_x, curr_y = self.location
@@ -156,7 +158,7 @@ class Courier:
                 
                 if visualize:
                     print(
-                        f'Partially completed order - Starting: {starting_pos} to Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
+                        f'Partially completed order - Starting: {starting_pos} to Restaurant: {old_curr[0]} to House: {old_curr[1]}')
                     print(f'Made it to: {self.location}, distance covered: {dist_covered}')
                     self.simulation_instance.visualize_layout()
                     print('-------------------------------------------------------------')
