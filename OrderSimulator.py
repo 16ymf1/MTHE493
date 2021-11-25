@@ -158,5 +158,48 @@ class Order_Simulator():
             print(
                 f'Courier {i} average order distance: {round(dist[i]/order_count[i], 3)}')
 
+    def average_order_distance(self, iters=1000):
+        order_count1 = [0, 0]
+        dist1 = [0, 0]
+        order_count2 = [0, 0]
+        dist2 = [0, 0]
+        couriers_1 = self.couriers.copy()
+        couriers_2 = self.couriers.copy()
+        for j in range(iters):
+            orders = self.generate_orders_for_timestep()
+            for i, order in enumerate(orders):
+                restaurant, house = self.restaurants[order[0]
+                                                     ], self.houses[order[1]]
+                courier_num1 = random.randint(0, self.num_couriers - 1)
+                courier_num2 = min(couriers_2.items(
+                ), key=lambda x: x[1].order_dist_from_last_queue(restaurant, restaurant))[0]
+                courier_1 = couriers_1[courier_num1]
+                courier_2 = couriers_2[courier_num2]
+                courier_1.add_order(restaurant, house)
+                courier_2.add_order(restaurant, house)
+                order_count1[courier_num1] += 1
+                dist1[courier_num1] += courier_1.order_dist_from_last_queue(
+                    restaurant, house)
+                order_count2[courier_num2] += 1
+                dist2[courier_num2] += courier_2.order_dist_from_last_queue(
+                    restaurant, house)
+
+            for courier1, courier2 in zip(couriers_1.values(), couriers_2.values()):
+                courier1.perform_deliveries(visualize=None)
+                courier2.perform_deliveries(visualize=None)
+
+        dist_tot1, dist_tot2 = 0, 0
+        num1, num2 = 0, 0
+        for i in couriers_1:
+            dist_tot1 += dist1[i]
+            dist_tot2 += dist2[i]
+            num1 += order_count1[i]
+            num2 += order_count2[i]
+            print(
+                f'Courier {i} average order distance (Simple): {dist1[i]/order_count1[i]}')
+            print(
+                f'Courier {i} average order distance (Greedy): {dist2[i]/order_count2[i]}')
+        print(f'Overall average (Simple): {dist_tot1 / num1}')
+        print(f'Overall average (Greedy): {dist_tot2 / num2}')
 
     
