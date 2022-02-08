@@ -44,18 +44,8 @@ class Car(Courier):
 
         ## If there is no current order, nothing to do
         if not self.curr_order:
-            if visualize:
-                print('No orders in queue')
             return
-        
-        if visualize:
-            print('Start:')
-        add = 1 if self.curr_order else 0
-        t = timestep if timestep is not None else 't'
-        if visualize is not None:
-            print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')
-
-        
+   
         ## Updating distance tracking variables
         if self.queue_distance > timestep_dist:
             self.queue_distance -= timestep_dist
@@ -73,19 +63,12 @@ class Car(Courier):
             if dist_left_in_order <= timestep_dist:
                 self.location = self.curr_order[1]
                 timestep_dist -= dist_left_in_order
-                if visualize:
-                    print(f'Completed order - Started: {starting_pos} to Restaurant: {self.curr_order[0]} to House: {self.curr_order[1]}')
-                    print(f'Distance covered: {dist_left_in_order}')
-                    self.simulation_instance.visualize_layout()
-                    print('---------------------------------------------------------------------')
                     
                 self.curr_order = None
                 if len(self.order_queue) > 0:
                     self.curr_order = self.order_queue.popleft()
             else:
-                dist_to_restaurant = self.order_dist_from_current_loc(
-                    self.curr_order[0], self.curr_order[0])
-                dist_covered = timestep_dist
+                dist_to_restaurant = self.order_dist_from_current_loc(self.curr_order[0], self.curr_order[0])
                 ## If distance to restaurant greater than timestep distance
                 ## move as close as possible to restaurant
                 if dist_to_restaurant > timestep_dist:
@@ -93,24 +76,10 @@ class Car(Courier):
                 ## Else, move to restaurant, then as close as possible to delivery house
                 else:
                     self.location = self.curr_order[0]
-                    old_curr = self.curr_order
                     self.curr_order = (self.curr_order[1], self.curr_order[1])
                     self.partial_move(timestep_dist, 1)
                 
-                if visualize:
-                    print(
-                        f'Partially completed order - Starting: {starting_pos} to Restaurant: {old_curr[0]} to House: {old_curr[1]}')
-                    print(f'Made it to: {self.location}, distance covered: {dist_covered}')
-                    self.simulation_instance.visualize_layout()
-                    print('-------------------------------------------------------------')
-                
                 timestep_dist = 0
-        
-        add = 1 if self.curr_order else 0
-        
-        if visualize:
-            print('End:')
-            print(f'L_{t} = {self.queue_distance}, A_{t} = {self.new_distance}, S_{t} = {self.speed}, Queue Length: {len(self.order_queue) + add}')
     
     def partial_move(self, timestep_dist, i):
         dst_x, dst_y = self.curr_order[i]
