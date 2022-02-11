@@ -67,6 +67,7 @@ class Car(Courier):
                 self.curr_order = None
                 if len(self.order_queue) > 0:
                     self.curr_order = self.order_queue.popleft()
+                    self.simulation_instance.order_delivered += 1
             else:
                 dist_to_restaurant = self.order_dist_from_current_loc(self.curr_order[0], self.curr_order[0])
                 ## If distance to restaurant greater than timestep distance
@@ -75,6 +76,7 @@ class Car(Courier):
                     self.partial_move(timestep_dist, 0)
                 ## Else, move to restaurant, then as close as possible to delivery house
                 else:
+                    timestep_dist -= dist_to_restaurant
                     self.location = self.curr_order[0]
                     self.curr_order = (self.curr_order[1], self.curr_order[1])
                     self.partial_move(timestep_dist, 1)

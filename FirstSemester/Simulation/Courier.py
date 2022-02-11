@@ -11,7 +11,7 @@ class Courier:
         self.queue_distance = 0     # L_t
         self.new_distance = 0       # A_t
         self.speed = courier_speed  # S_t
-    
+
     def initialize_position(self):
         '''
         Initializes courier postion randomly on the grid

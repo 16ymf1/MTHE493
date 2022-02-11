@@ -12,29 +12,36 @@ class SimulationEnvironment:
     MAX_QUEUE_LENGTH = 3
     REWARD = 10
     def __init__(self, grid_length, restaurants, couriers):
+        self.starting_couriers = couriers
         self.grid_length = grid_length
         self.load_restaurants(restaurants)
-        self.load_couriers(couriers)
         self.state = self.reset()
-        self.order_queue = deque([])
-        self.C = 0
-        self.timestep = 0
 
     def reset(self):
         ## Reset entire environment
+        self.load_couriers(self.starting_couriers)
+        self.order_delivered = 0
+        self.C = 0
+        self.timestep = 0
+        self.order_queue = deque([])
+
         return [0, 0, 0, 0, 0]
 
     def get_state(self):
         '''
         Return current state and reward
         '''
-        l_t1 = math.floor(self.couriers[0].queue_distance / (self.grid_length * 4 * SimulationEnvironment.MAX_QUEUE_LENGTH))
-        l_t2 = math.floor(self.couriers[1].queue_distance / (self.grid_length * 4 * SimulationEnvironment.MAX_QUEUE_LENGTH))
+        #print('l1', self.couriers[0].queue_distance)
+        #print('l2', self.couriers[1].queue_distance)
+        l_t1 = math.floor(self.couriers[0].queue_distance / (self.grid_length * 4))
+        l_t2 = math.floor(self.couriers[1].queue_distance / (self.grid_length * 4))
 
         if len(self.order_queue) > 0:
             first_order = self.order_queue[0]
-            o_t1 = math.floor(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]) / (self.grid_length * 4))
-            o_t2 = math.floor(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]) / (self.grid_length * 4))
+            #print('o1', self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
+            #print('o2', self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
+            o_t1 = math.floor(self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
+            o_t2 = math.floor(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
         else:
             o_t1 = 0
             o_t2 = 0
@@ -51,7 +58,7 @@ class SimulationEnvironment:
 
         ## Update L_t, O_t, C
         courier = self.couriers[action]
-        order = self.order_queue.pop_left()
+        order = self.order_queue.popleft()
         
         ##get the restaurant and the house
         r = order[0]
@@ -70,7 +77,7 @@ class SimulationEnvironment:
     def get_actions(self):
         action_list = []
         for i, courier in self.couriers.items():
-            if len(courier.order_queue) < 3:
+            if courier.get_queue_length() < 3:
                 action_list.append(i)     
         return action_list
 
