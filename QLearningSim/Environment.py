@@ -16,16 +16,37 @@ class SimulationEnvironment:
         self.grid_length = grid_length
         self.load_restaurants(restaurants)
         self.state = self.reset()
+        self.total_order_count = 0
+        self.total_order_time = 0
+        self.total_order_distance = 0
 
     def reset(self):
         ## Reset entire environment
         self.load_couriers(self.starting_couriers)
         self.order_delivered = 0
+        self.order_time = 0
+        self.order_distance = 0
         self.C = 0
         self.timestep = 0
         self.order_queue = deque([])
 
         return [0, 0, 0, 0, 0]
+    
+    def l_t_bin(self, l_t):
+        bin = 2
+        avg_dist = self.total_order_distance / self.total_order_count
+        for i in range(2):
+            if avg_dist * i <= l_t < avg_dist * i + avg_dist:
+                bin = i
+        return bin
+    
+    def o_t_bin(self, o_t):
+        bin = 2
+        avg_dist = self.total_order_distance / self.total_order_count / 3
+        for i in range(2):
+            if avg_dist * i <= o_t < avg_dist * i + avg_dist:
+                bin = i
+        return bin
 
     def get_state(self):
         '''
@@ -33,15 +54,19 @@ class SimulationEnvironment:
         '''
         #print('l1', self.couriers[0].queue_distance)
         #print('l2', self.couriers[1].queue_distance)
-        l_t1 = math.floor(self.couriers[0].queue_distance / (self.grid_length * 4))
-        l_t2 = math.floor(self.couriers[1].queue_distance / (self.grid_length * 4))
+        if self.total_order_count > 0:
+            l_t1 = self.l_t_bin(self.couriers[0].queue_distance)
+            l_t2 = self.l_t_bin(self.couriers[1].queue_distance)
+        else:
+            l_t1 = 0
+            l_t2 = 0
 
-        if len(self.order_queue) > 0:
+        if len(self.order_queue) > 0 and self.total_order_count > 0:
             first_order = self.order_queue[0]
             #print('o1', self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
             #print('o2', self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
-            o_t1 = math.floor(self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
-            o_t2 = math.floor(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
+            o_t1 = self.o_t_bin(self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
+            o_t2 = self.o_t_bin(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
         else:
             o_t1 = 0
             o_t2 = 0
@@ -67,10 +92,14 @@ class SimulationEnvironment:
         
         l_t = courier.queue_distance
         ##calculate total order time
-        T= l_t / courier.speed
-        self.C = 0
-        if T <= 45:
-            self.C = 1
+        T = l_t / courier.speed
+        self.order_time += T
+        self.total_order_time += T
+        self.C = 1
+        if self.total_order_count > 0:
+            ## Dynamic reward function
+            if T > (self.total_order_time / self.total_order_count):
+                self.C = 0
         
         return [self.get_state(), SimulationEnvironment.REWARD if self.C == 1 else -SimulationEnvironment.REWARD]
     

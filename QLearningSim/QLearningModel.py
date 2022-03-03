@@ -13,6 +13,10 @@ class QLearningModel:
         self.order_rate = order_rate
         self.create_mapping()
         self.order_delivered_list = []
+        self.order_time_list = []
+        self.order_dist_list = []
+        self.total_avg_dist = []
+        self.total_avg_time = []
 
     def run_sim(self):
         for day in range(self.num_episodes):
@@ -48,6 +52,10 @@ class QLearningModel:
             
             self.reward_list.append(total_rewards)
             self.order_delivered_list.append(self.environment.order_delivered)
+            self.order_time_list.append(self.environment.order_time / self.environment.order_delivered)
+            self.order_dist_list.append(self.environment.order_distance / self.environment.order_delivered)
+            self.total_avg_dist.append(self.environment.total_order_distance / self.environment.total_order_count)
+            self.total_avg_time.append(self.environment.total_order_time / self.environment.total_order_count)
     
     def create_mapping(self):
         self.state_map = {}

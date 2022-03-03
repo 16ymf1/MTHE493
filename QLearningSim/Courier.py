@@ -29,6 +29,9 @@ class Courier:
         Adds order to couriers queue
         '''
         dist = self.order_dist_from_last_queue(restaurant, house)
+        self.simulation_instance.order_distance += dist
+        self.simulation_instance.total_order_distance += dist
+        self.simulation_instance.total_order_count += 1
         self.order_queue.append((restaurant, house))
         self.queue_distance += dist
         self.new_distance += dist
