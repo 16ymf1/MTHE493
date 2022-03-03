@@ -5,7 +5,8 @@ sys.path.append(os.getcwd())
 from collections import deque
 import random
 import numpy as np
-from QLearningSim.Car import Car
+#from QLearningSim.Car import Car
+from Car import Car
 import math
 
 class SimulationEnvironment:
@@ -31,15 +32,11 @@ class SimulationEnvironment:
         '''
         Return current state and reward
         '''
-        #print('l1', self.couriers[0].queue_distance)
-        #print('l2', self.couriers[1].queue_distance)
         l_t1 = math.floor(self.couriers[0].queue_distance / (self.grid_length * 4))
         l_t2 = math.floor(self.couriers[1].queue_distance / (self.grid_length * 4))
 
         if len(self.order_queue) > 0:
             first_order = self.order_queue[0]
-            #print('o1', self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
-            #print('o2', self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
             o_t1 = math.floor(self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
             o_t2 = math.floor(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]) / ((self.grid_length * 4) / 3))
         else:
