@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 class readQLearningModel:
-    def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate, random_sim):
+    def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate, sim_version):
         self.learning_rate = learning_rate
         self.discount_rate = discount_rate
         self.num_episodes = num_episodes
@@ -14,7 +14,7 @@ class readQLearningModel:
         self.order_rate = order_rate
         self.create_mapping()
         self.order_delivered_list = []
-        self.random_sim = random_sim
+        self.sim_version = sim_version
         self.order_distance_list = []
         self.distance_from_last_order_list = []
 
@@ -38,8 +38,13 @@ class readQLearningModel:
                         ## [1, 1, 0, 0, 1]
                         state_index = self.state_map[tuple(state)]
                         #prself.randomlf.Q[state_index,possible_action])
-                        if self.random_sim==0:
+                        if self.sim_version==0:
                             action = np.argmax(self.Q[state_index,possible_action] + np.random.randn(1,2)*(1/(day+1))) if len(possible_action) > 1 else possible_action[0]
+                        elif self.sim_version == 1:
+                            action = min(self.couriers.items(), key=lambda x:x[1].queue_distance)[0] if len(possible_action) > 1 else possible_action[0]
+                        elif self.sim_version == 2:
+                            first_order = self.environment.order_queue[0]
+                            action = min(self.couriers.items(), key=lambda x:x[1].order_dist_from_last_queue(first_order[0], first_order[0]))[0]
                         else:
                             action = np.random.randint(0,2) if len(possible_action) > 1 else possible_action[0]
                         next_state, reward = self.environment.step(action)
