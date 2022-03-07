@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-values = np.load('Results/reward_list.npy')
-delivered = np.load('Results/delivered_list.npy')
-time = np.load('Results/time_list.npy')
-dist = np.load('Results/dist_list.npy')
-total_dist = np.load('Results/total_dist.npy')
-total_time = np.load('Results/total_avg_time.npy')
+folder = 'Results'
+
+values = np.load(f'{folder}/reward_list.npy')
+delivered = np.load(f'{folder}/delivered_list.npy')
+time = np.load(f'{folder}/time_list.npy')
+dist = np.load(f'{folder}/dist_list.npy')
+total_dist = np.load(f'{folder}/total_dist.npy')
+total_time = np.load(f'{folder}/total_avg_time.npy')
 
 plt.plot(values)
 plt.xlabel('Days Simulated')

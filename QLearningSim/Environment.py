@@ -1,6 +1,5 @@
 
 import os, sys
-from re import A
 sys.path.append(os.getcwd())
 from collections import deque
 import random
@@ -11,7 +10,7 @@ import math
 class SimulationEnvironment:
     MAX_QUEUE_LENGTH = 3
     REWARD = 10
-    def __init__(self, grid_length, restaurants, couriers):
+    def __init__(self, grid_length, restaurants, couriers, bin_size=None):
         self.starting_couriers = couriers
         self.grid_length = grid_length
         self.load_restaurants(restaurants)
@@ -19,6 +18,7 @@ class SimulationEnvironment:
         self.total_order_count = 0
         self.total_order_time = 0
         self.total_order_distance = 0
+        self.bin_size = bin_size
 
     def reset(self):
         ## Reset entire environment
@@ -34,7 +34,7 @@ class SimulationEnvironment:
     
     def l_t_bin(self, l_t):
         bin = 2
-        avg_dist = self.total_order_distance / self.total_order_count
+        avg_dist = self.total_order_distance / self.total_order_count if self.bin_size is None else self.bin_size
         for i in range(2):
             if avg_dist * i <= l_t < avg_dist * i + avg_dist:
                 bin = i
@@ -42,7 +42,7 @@ class SimulationEnvironment:
     
     def o_t_bin(self, o_t):
         bin = 2
-        avg_dist = self.total_order_distance / self.total_order_count / 3
+        avg_dist = self.total_order_distance / self.total_order_count / 3 if self.bin_size is None else self.bin_size / 3
         for i in range(2):
             if avg_dist * i <= o_t < avg_dist * i + avg_dist:
                 bin = i
@@ -98,10 +98,10 @@ class SimulationEnvironment:
         self.C = 1
         if self.total_order_count > 0:
             ## Dynamic reward function
-            if T > (self.total_order_time / self.total_order_count):
+            if T > 40:
                 self.C = 0
         
-        return [self.get_state(), SimulationEnvironment.REWARD if self.C == 1 else -SimulationEnvironment.REWARD]
+        return [self.get_state(), SimulationEnvironment.REWARD if self.C == 1 else -2*SimulationEnvironment.REWARD]
     
     def get_actions(self):
         action_list = []
