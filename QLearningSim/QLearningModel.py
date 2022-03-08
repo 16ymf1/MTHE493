@@ -1,14 +1,17 @@
 import numpy as np
 
 class QLearningModel:
-    def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate):
+    def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate, q_table=None):
         self.learning_rate = learning_rate
         self.discount_rate = discount_rate
         self.num_episodes = num_episodes
         self.reward_list = []
         self.timesteps_per_day = timesteps_per_day
         self.environment = environment
-        self.Q = np.zeros((162, 2))
+        if q_table:
+            self.Q = np.load(q_table)
+        else:  
+            self.Q = np.zeros((162, 2))
         self.episode = 0
         self.order_rate = order_rate
         self.create_mapping()

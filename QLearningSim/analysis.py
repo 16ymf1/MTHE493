@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-folder = 'Results'
+folder = 'Dynamic_Results'
 
 values = np.load(f'{folder}/reward_list.npy')
 delivered = np.load(f'{folder}/delivered_list.npy')
@@ -38,4 +38,5 @@ plt.show()
 plt.plot(total_dist)
 plt.xlabel('Days Simulated')
 plt.ylabel('Average TOTAL Order Dist')
+print(f'{total_dist[-1]}')
 plt.show()
