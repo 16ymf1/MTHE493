@@ -42,9 +42,15 @@ class SimulationEnvironment:
     
     def o_t_bin(self, o_t):
         bin = 2
-        avg_dist = self.total_order_distance / self.total_order_count / 3 if self.bin_size is None else self.bin_size / 3
+        avg_dist = self.total_order_distance / self.total_order_count if self.bin_size is None else self.bin_size
+        if o_t < 5/6 * avg_dist:
+            return 0
+        elif o_t > 7/6 * avg_dist:
+            return 2
+        else:
+            return 1
         for i in range(2):
-            if avg_dist * i <= o_t < avg_dist * i + avg_dist:
+            if 5 / 6 * avg_dist * i <= o_t < 2 / 3 * avg_dist * i + avg_dist:
                 bin = i
         return bin
 
@@ -57,6 +63,8 @@ class SimulationEnvironment:
         if self.total_order_count > 0:
             l_t1 = self.l_t_bin(self.couriers[0].queue_distance)
             l_t2 = self.l_t_bin(self.couriers[1].queue_distance)
+            #l_t1 = self.couriers[0].get_queue_length()
+            #l_t2 = self.couriers[1].get_queue_length()
         else:
             l_t1 = 0
             l_t2 = 0
@@ -165,4 +173,8 @@ class SimulationEnvironment:
 
         return orders
 
-    
+
+### Track number of visits to states
+### Fix binning on o_t
+### L_t bin with number of orders to
+

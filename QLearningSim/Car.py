@@ -67,7 +67,7 @@ class Car(Courier):
                 self.curr_order = None
                 if len(self.order_queue) > 0:
                     self.curr_order = self.order_queue.popleft()
-                    self.simulation_instance.order_delivered += 1
+                self.simulation_instance.order_delivered += 1
             else:
                 dist_to_restaurant = self.order_dist_from_current_loc(self.curr_order[0], self.curr_order[0])
                 ## If distance to restaurant greater than timestep distance

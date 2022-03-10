@@ -1,9 +1,11 @@
 import numpy as np
+import random
 
 class QLearningModel:
     def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate, q_table=None):
         self.learning_rate = learning_rate
         self.discount_rate = discount_rate
+        self.epsilon = 0.9
         self.num_episodes = num_episodes
         self.reward_list = []
         self.timesteps_per_day = timesteps_per_day
@@ -12,6 +14,7 @@ class QLearningModel:
             self.Q = np.load(q_table)
         else:  
             self.Q = np.zeros((162, 2))
+        self.Q_tracker = np.zeros((162,2))
         self.episode = 0
         self.order_rate = order_rate
         self.create_mapping()
@@ -44,11 +47,16 @@ class QLearningModel:
                         ## [1, 1, 0, 0, 1]
                         state_index = self.state_map[tuple(state)]
                         #print(self.Q[state_index,possible_action])
-                        action = np.argmax(self.Q[state_index,possible_action] + np.random.randn(1,2)*(1/(day+1))) if len(possible_action) > 1 else possible_action[0]
+                        # Should this exploration part change??
+                        if random.random() < self.epsilon:
+                            action = np.argmax(self.Q[state_index,possible_action]) if len(possible_action) > 1 else possible_action[0]
+                        else:
+                            action = random.choice(possible_action)
                         #print('action', action)
                         next_state, reward = self.environment.step(action)
                         next_state_index = self.state_map[tuple(next_state)]
                         self.Q[state_index,action] = self.Q[state_index,action] + self.learning_rate*(reward + self.discount_rate*np.max(self.Q[next_state_index,:]) - self.Q[state_index,action])
+                        self.Q_tracker[state_index, action] = self.Q_tracker[state_index, action] + 1
                         total_rewards += reward
                         state = next_state
                 self.environment.timestep_deliveries()

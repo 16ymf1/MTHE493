@@ -2,13 +2,13 @@ from Environment import SimulationEnvironment
 from QLearningModel import QLearningModel
 import numpy as np
 
-ORDER_RATE = 0.15
+ORDER_RATE = 0.09
 LEARNING_RATE = 0.8
 DISCOUNT_RATE = 0.95
-NUM_EPISODES = 2000
+NUM_EPISODES = 5000
 NUM_TIMESTEPS = 288
 
-folder = 'Updated_Results'
+folder = 'Results'
 
 q_table = f'{folder}/q_table.npy'
 
@@ -27,3 +27,4 @@ np.save('Updated_Results/total_dist.npy', model.total_avg_dist)
 np.save('Updated_Results/total_avg_time.npy', model.total_avg_time)
 np.save('Updated_Results/q_table.npy', model.Q)
 np.savetxt('Updated_Results/q_table.csv', model.Q, delimiter=',')
+np.savetxt('Updated_Results/q_table_tracker.csv', model.Q_tracker, delimiter=',')
