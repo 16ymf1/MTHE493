@@ -5,12 +5,12 @@ from collections import deque
 import random
 import numpy as np
 from QLearningSim.Car import Car
-import math
+import pandas as pd
 
 class SimulationEnvironment:
     MAX_QUEUE_LENGTH = 3
     REWARD = 10
-    def __init__(self, grid_length, restaurants, couriers, bin_size=None):
+    def __init__(self, grid_length, restaurants, couriers, num_lt_bins, num_ot_bins, bin_size=None):
         self.starting_couriers = couriers
         self.grid_length = grid_length
         self.load_restaurants(restaurants)
@@ -19,6 +19,9 @@ class SimulationEnvironment:
         self.total_order_time = 0
         self.total_order_distance = 0
         self.bin_size = bin_size
+        self.num_lt_bins = num_lt_bins
+        self.num_ot_bins = num_ot_bins
+        self.lt_decision_lvls, self.ot_decision_lvls = self.get_decision_lvls()
 
     def reset(self):
         ## Reset entire environment
@@ -33,53 +36,39 @@ class SimulationEnvironment:
         return [0, 0, 0, 0, 0]
     
     def l_t_bin(self, l_t):
-        bin = 2
-        avg_dist = self.total_order_distance / self.total_order_count if self.bin_size is None else self.bin_size
-        for i in range(2):
-            if avg_dist * i <= l_t < avg_dist * i + avg_dist:
-                bin = i
-        return bin
+        for i, lvl in enumerate(self.lt_decision_lvls):
+            if l_t<=lvl:
+                return i
+        return self.num_lt_bins-1
     
     def o_t_bin(self, o_t):
-        bin = 2
-        avg_dist = self.total_order_distance / self.total_order_count if self.bin_size is None else self.bin_size
-        if o_t < 5/6 * avg_dist:
-            return 0
-        elif o_t > 7/6 * avg_dist:
-            return 2
-        else:
-            return 1
-        for i in range(2):
-            if 5 / 6 * avg_dist * i <= o_t < 2 / 3 * avg_dist * i + avg_dist:
-                bin = i
-        return bin
+        for i, lvl in enumerate(self.ot_decision_lvls):
+            if o_t<=lvl:
+                return i
+        return self.num_ot_bins-1
 
     def get_state(self):
         '''
         Return current state and reward
         '''
-        #print('l1', self.couriers[0].queue_distance)
-        #print('l2', self.couriers[1].queue_distance)
+        l_t_bins = []
         if self.total_order_count > 0:
-            l_t1 = self.l_t_bin(self.couriers[0].queue_distance)
-            l_t2 = self.l_t_bin(self.couriers[1].queue_distance)
-            #l_t1 = self.couriers[0].get_queue_length()
-            #l_t2 = self.couriers[1].get_queue_length()
+            for courier in self.couriers.values():
+                l_t_bins.append(self.l_t_bin(courier.queue_distance))
         else:
-            l_t1 = 0
-            l_t2 = 0
+            for courier in self.couriers.values():
+                l_t_bins.append(0)
 
+        o_t_bins = []
         if len(self.order_queue) > 0 and self.total_order_count > 0:
             first_order = self.order_queue[0]
-            #print('o1', self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
-            #print('o2', self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
-            o_t1 = self.o_t_bin(self.couriers[0].order_dist_from_last_queue(first_order[0], first_order[1]))
-            o_t2 = self.o_t_bin(self.couriers[1].order_dist_from_last_queue(first_order[0], first_order[1]))
+            for courier in self.couriers.values():
+                o_t_bins.append(self.o_t_bin(courier.order_dist_from_last_queue(first_order[0], first_order[1])))
         else:
-            o_t1 = 0
-            o_t2 = 0
+            for courier in self.couriers.values():
+                o_t_bins.append(0)
 
-        return [l_t1, l_t2, o_t1, o_t2, self.C]
+        return [*l_t_bins, *o_t_bins, self.C]
 
     def step(self, action):
         '''
@@ -172,6 +161,11 @@ class SimulationEnvironment:
                 orders.append((self.restaurants[random.randint(0, num_restaurant - 1)], self.houses[house]))
 
         return orders
+    
+    def get_decision_lvls(self):
+        lt_vals = pd.read_csv("QLearningSim/l_t.csv",index_col=0).values
+        ot_vals = pd.read_csv("QLearningSim/o_t.csv",index_col=0).values
+        return np.quantile(lt_vals,[1/(self.num_lt_bins)*i for i in range(1,self.num_lt_bins)]), np.quantile(ot_vals,[1/(self.num_ot_bins)*i for i in range(1,self.num_ot_bins)])
 
 
 ### Track number of visits to states

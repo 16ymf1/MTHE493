@@ -1,16 +1,19 @@
 import numpy as np
+import pandas as pd
+import itertools
 
 class readQLearningModel:
-    def __init__(self, learning_rate, discount_rate, num_episodes, timesteps_per_day, environment, order_rate, sim_version, visualize=False):
-        self.learning_rate = learning_rate
-        self.discount_rate = discount_rate
+    def __init__(self, num_episodes, timesteps_per_day, environment, order_rate, sim_version, visualize=False, folder=None):
         self.num_episodes = num_episodes
         self.reward_list = []
         self.timesteps_per_day = timesteps_per_day
-        self.Q = np.load('twoThirdResults/q_table.npy')
+
+        self.Q = np.load(f'{folder}/q_table.npy')
         self.environment = environment
         self.episode = 0
         self.order_rate = order_rate
+        self.num_lt_bins = environment.num_lt_bins
+        self.num_ot_bins = environment.num_ot_bins
         self.create_mapping()
         self.order_delivered_list = []
         self.sim_version = sim_version
@@ -83,13 +86,14 @@ class readQLearningModel:
     
     def create_mapping(self):
         self.state_map = {}
-        count = 0
-        for l1 in range(3):
-            for l2 in range(3):
-                for o1 in range(3):
-                    for o2 in range(3):
-                        for c in range(2):
-                            state = [l1, l2, o1, o2, c]
-                            self.state_map[tuple(state)] = count
-                            count += 1
+
+        num_couriers = len(self.environment.couriers)
+
+        l_t_states = [[*range(self.num_lt_bins)]] * num_couriers
+        o_t_states = [[*range(self.num_ot_bins)]] * num_couriers
+        c_states = [0,1]
+
+        all_states = itertools.product(*l_t_states, *o_t_states, c_states)
+        for i, state in enumerate(all_states):
+            self.state_map[state] = i
                 
